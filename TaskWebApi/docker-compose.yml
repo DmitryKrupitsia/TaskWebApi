@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.sql
-    container_name: hys_sql
+    container_name: hys_test_sql
     environment:
       - SA_PASSWORD=Query1234
       - ACCEPT_EULA=Y
