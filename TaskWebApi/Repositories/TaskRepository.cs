@@ -62,7 +62,7 @@ namespace TaskWebApi.Repositories
         public async Task<IEnumerable<(int CustomerIdTv, int CustomerIdDsl, DateTime StartDate)>>
      GetLinkedCustomersAsync()
         {
-            // 1) Выполняем тот же самый cross-join + Any + Union…Max(), но через ToListAsync()
+            
             var raw = await (
                 from c1 in _context.Customers
                 from c2 in _context.Customers
@@ -75,25 +75,22 @@ namespace TaskWebApi.Repositories
                 {
                     CustomerIdTv = c1.Id,
                     CustomerIdDsl = c2.Id,
-                    // Берём все даты старта из TV-продуктов c1 и DSL-продуктов c2 и считаем Max()
+                    
                     StartDate = _context.TvProducts
                                         .Where(tv => tv.CustomerId == c1.Id)
-                                        .Select(tv => tv.StartDate)                // DateOnly?
+                                        .Select(tv => tv.StartDate)                
                                         .Union(
                                            _context.DslProducts
                                                .Where(dsl => dsl.CustomerId == c2.Id)
                                                .Select(dsl => dsl.StartDate)
                                         )
-                                        .Max()                                     // DateOnly?
+                                        .Max()                                    
                 })
                 .Distinct()
                 .ToListAsync();
-
-            // 2) Переводим DateOnly? в DateTime и проектируем в кортежи
             var result = raw
                 .Select(x =>
                 {
-                    // если у вас StartDate — DateOnly? (nullable), то:
                     var dto = x.StartDate;
                     var dt = dto.HasValue
                                 ? dto.Value.ToDateTime(TimeOnly.MinValue)
